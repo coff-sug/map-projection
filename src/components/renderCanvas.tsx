@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import type { FieldData } from '../App';
+// import type { FieldData } from '../App';
 import store from '../store'; 
 
 type RenderCanvasProps = {
@@ -47,5 +47,14 @@ const RenderCanvas: React.FC<RenderCanvasProps> = ({ tempData }) => {
 
   return null; 
 };
+type FieldData = {
+  cellsize: number;
+  data: number[][];
+  nODATA: string;
+  xllcorner: number;
+  yllcorner: number;
+  ncols: number;
+  nrows: number;
+}
 
 export default RenderCanvas;

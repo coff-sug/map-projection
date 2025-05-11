@@ -1,40 +1,210 @@
+// //第五次作业
+// import React, { useEffect, useRef, useState } from "react";
+// import L from "leaflet";
+// import * as d3 from "d3";
+// import "./assets/leaflet.canvaslayer.field.js";
+// import Location from "./components/Location";
+// import CanvasRender from "./components/CanvasRender";
+// import store from "./store";
+// import Timeline from "./components/Timeline";
+// import DataSourceSelector from "./components/DataSourceSelector";
 
-//作业二
+// window.d3 = d3;
+
+// const MapData: MapDataType[] = [
+//   {
+//     name: "温度1",
+//     url: "/temp1.json",
+//     unit: "℃",
+//     time: "4-19",
+//   },
+//   {
+//     name: "盐度1",
+//     url: "/temp2.json",
+//     unit: "mg/ml",
+//     time: "4-20",
+//   },
+//   {
+//     name: "叶绿素1",
+//     url: "/temp2.json",
+//     unit: "mol/ml",
+//     time: "4-21",
+//   },
+//   {
+//     name: "温度2",
+//     url: "/temp1.json",
+//     unit: "℃",
+//     time: "4-22",
+//   },
+//   {
+//     name: "盐度2",
+//     url: "/temp2.json",
+//     unit: "mg/ml",
+//     time: "4-23",
+//   },
+//   {
+//     name: "叶绿素2",
+//     url: "/temp2.json",
+//     unit: "mol/ml",
+//     time: "4-24",
+//   },
+// ];
+
+// export interface MapDataType {
+//   name: string;
+//   url: string;
+//   unit: string;
+//   time: string;
+// }
+
+// const Default_Time_Index = 0;
+
+// export default function App() {
+//   const [currentTimeIndex, setCurrentTimeIndex] = useState(Default_Time_Index);
+//   const currentMapData = MapData[currentTimeIndex];
+//   const mapRef = useRef<HTMLDivElement>(null);
+//   const [mapReady, setMapReady] = useState(false);
+
+//   useEffect(() => {
+//     if (mapRef.current) {
+//       const _map = L.map(mapRef.current, {
+//         zoomControl: false,
+//         attributionControl: false,
+//       }).setView([36, 120], 5);
+//       store.setMap(_map);
+
+//       console.log("Map initialized"); 
+//       setMapReady(true);
+
+//       L.control
+//         .scale({
+//           imperial: false,
+//           position: "bottomright",
+//         })
+//         .addTo(_map);
+//       L.control.zoom({ position: "bottomright" }).addTo(_map);
+//       L.tileLayer(
+//         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+//         {
+//           attribution: "",
+//         }
+//       ).addTo(_map);
+
+//       return () => {
+//         console.log("Map removed"); 
+//         _map.remove();
+//       };
+//     }
+//   }, []);
+
+//   return (
+//     <div className="relative h-screen">
+//       {}
+//       <div ref={mapRef} className="absolute inset-0 z-10"></div>
+
+//       {}
+//       {mapReady && (
+//         <>
+//           <Location />
+//           <DataSourceSelector
+//             data={MapData}
+//             currentTimeIndex={currentTimeIndex}
+//             updateIndex={setCurrentTimeIndex}
+//           />
+//           <CanvasRender mapData={currentMapData} />
+//         </>
+//       )}
+
+//       {}
+//       <Timeline
+//         defalutIndex={Default_Time_Index}
+//         data={MapData}
+//         updateIndex={setCurrentTimeIndex}
+//       />
+//     </div>
+//   );
+// }
+
+// //App.tsx
 import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
+import * as d3 from "d3";
+window.d3 = d3;
+import "./assets/leaflet.canvaslayer.field.js";
 import Location from "./components/Location";
-import RenderCanvas from "./components/renderCanvas"; 
+import CanvasRender from "./components/CanvasRender";
 import store from "./store";
-import "leaflet/dist/leaflet.css";
-
-export type FieldData = {
-  cellsize: number;
-  data: number[][];
-  nODATA: string;
-  xllcorner: number;
-  yllcorner: number;
-  ncols: number;
-  nrows: number;
-};
+import Timeline from "./components/Timeline.js";
+import {ChevronLast,ChevronFirst,Play,Pause} from "lucide-react"
+import Resource from "./components/Resource.js";
+const MapData: MapDataType[] = [
+  {
+    name: "温度1",
+    url: "/temp1.json",
+    unit: "℃",
+    time:"4-19",
+  },
+  {
+    name: "盐度1",
+    url: "/temp2.json",
+    unit: "mg/ml",
+    time:"4-20",
+  },
+  {
+    name: "叶绿素1",
+    url: "/temp2.json",
+    unit: "mol/ml",
+    time:"4-21",
+  },
+  {
+    name: "温度2",
+    url: "/temp1.json",
+    unit: "℃",
+    time:"4-22",
+  },
+  {
+    name: "盐度2",
+    url: "/temp2.json",
+    unit: "mg/ml",
+    time:"4-23",
+  },
+  {
+    name: "叶绿素2",
+    url: "/temp2.json",
+    unit: "mol/ml",
+    time:"4-24",
+  },
+];
+export interface MapDataType {
+  name: string;
+  url: string;
+  unit: string;
+  time: string;
+}
+const Default_Time_Index = 0;
 export default function App() {
+  //const currentDataKey: string = "温度";
+  const [currentTimeIndex,setCurrentTimeIndex] = useState(Default_Time_Index);
+  const currentMapData = MapData[currentTimeIndex];
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapReady, setMapReady] = useState(false);
-  const [tempData, setTempData] = useState<FieldData | null>(null);
-
   useEffect(() => {
     if (mapRef.current) {
       const _map = L.map(mapRef.current, {
         zoomControl: false,
         attributionControl: false,
-      }).setView([36, 120], 7);
-      store.setMap(_map); // 将 map 存入 store
+      }).setView([36, 120], 5);
+      store.setMap(_map);
+
       setMapReady(true);
 
-      // 添加控件
-      L.control.scale({ imperial: false, position: "bottomright" }).addTo(_map);
+      L.control
+        .scale({
+          imperial: false,
+          position: "bottomright",
+        })
+        .addTo(_map);
       L.control.zoom({ position: "bottomright" }).addTo(_map);
-
-      // 添加底图
       L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
@@ -48,32 +218,153 @@ export default function App() {
     }
   }, []);
 
-  // 获取数据
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("/temp1.json");
-      const data = await response.json();
-      setTempData(data);
-    };
-    if (mapReady) fetchData();
-  }, [mapReady]);
-
   return (
     <div className="relative">
       <div ref={mapRef} className="z-10 h-svh"></div>
-      {mapReady && <Location />}
-      {mapReady && tempData && ( 
-        <RenderCanvas tempData={tempData} />
+      {mapReady && (
+        <>
+          <Location />
+          <CanvasRender mapData={currentMapData} />
+        </>
       )}
+      <Timeline 
+      defalutIndex={Default_Time_Index} 
+      data ={MapData} 
+      updateIndex = {setCurrentTimeIndex}
+
+      ></Timeline>
+      <Resource 
+      defalutIndex={Default_Time_Index}
+      source={MapData}
+      update={setCurrentTimeIndex}/>
     </div>
-  );
+  );  
 }
+
+
+
+//第四次作业
+// import { useEffect, useRef, useState } from "react";
+// import L from "leaflet";
+// import * as d3 from "d3";
+// window.d3 = d3;
+// import "./assets/leaflet.canvaslayer.field.js";
+// import Location from "./components/Location";
+// import CanvasRender from "./components/CanvasRender"; 
+// import store from "./store";
+// import 'leaflet/dist/leaflet.css';
+// import Marker, { MarkerRefProps } from './components/Marker'; 
+
+// const MapData = [
+//   {
+//     name: "温度",
+//     url: "/temp1.json",
+//     unit: "℃",
+//   },
+//   {
+//     name: "盐度",
+//     url: "/temp2.json",
+//     unit: "mg/ml",
+//   },
+//   {
+//     name: "叶绿素",
+//     url: "/temp2.json",
+//     unit: "mol/ml",
+//   },
+// ];
+
+// export interface MapDataType {
+//   name: string;
+//   url: string;
+//   unit: string;
+// }
+
+// export default function App() {
+//   const currentDataKey: string = "温度";
+//   const currentMapData = MapData.find((el) => el.name === currentDataKey)!;
+//   const mapRef = useRef<HTMLDivElement>(null);
+//   const markerRef = useRef<MarkerRefProps | null>(null);
+//   const [mapReady, setMapReady] = useState(false);
+
+//   useEffect(() => {
+//     if (mapRef.current) {
+//       const _map = L.map(mapRef.current, {
+//         zoomControl: false,
+//         attributionControl: false,
+//       }).setView([36, 120], 7);
+
+//       store.setMap(_map);
+//       setMapReady(true);
+
+//       L.control.scale({
+//         imperial: false,
+//         position: "bottomright",
+//       }).addTo(_map);
+
+//       L.control.zoom({ position: "bottomright" }).addTo(_map);
+
+//       L.tileLayer(
+//         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+//         { attribution: "" }
+//       ).addTo(_map);
+
+//       return () => {
+//         _map.remove();
+//       };
+//     }
+//   }, []); 
+
+//   const toggleMarker = () => {
+//     if (markerRef.current) {
+//       markerRef.current.init("25"); 
+//       markerRef.current.isVisible ? markerRef.current.hide() : markerRef.current.show();
+//     }
+//   };
+
+//   return (
+//     <div className="relative">
+//       <div ref={mapRef} className="z-10 h-svh"></div>
+//       {mapReady && (
+//         <>
+//           <Location />
+//           <CanvasRender mapData={currentMapData} /> 
+//           <Marker ref={markerRef} value="25" name="温度" unit="℃" />
+//           <button onClick={toggleMarker} className="p-2 bg-blue-500 text-white rounded mt-4 ml-4">
+//             Toggle Marker
+//           </button>
+//         </>
+//       )}
+//     </div>
+//   );
+// }
+
+// export type FieldData = {
+//   cellsize: number;
+//   data: number[][];
+//   nODATA: string;
+//   xllcorner: number;
+//   yllcorner: number;
+//   ncols: number;
+//   nrows: number;
+// };
+
+// Marker.tsx remains unchanged
+
+
+
+
+
+
 //第三次课
 // import React, { useEffect, useRef, useState } from "react";
 // import L from "leaflet";
+// import * as d3 from "d3";
+// window.d3=d3;
+// import "./assets/leaflet.canvaslayer.field.js";
 // import Location from "./components/Location";
+// import CanvasRender from "./components/CanvasRender";
 // import store from "./store";
-// import 'leaflet/dist/leaflet.css';
+
 // export default function App() {
 //   const mapRef = useRef<HTMLDivElement>(null);
 //   const [mapReady, setMapReady] = useState(false);
@@ -82,11 +373,13 @@ export default function App() {
 //       const _map = L.map(mapRef.current, {
 //         zoomControl: false,
 //         attributionControl: false,
-//       }).setView([36, 120], 7);
+//       }).setView([36, 120], 5);
 //       store.setMap(_map);
+
 //       setMapReady(true);
-//       renderCanvas(_map);
-//       L.control.scale({
+
+//       L.control
+//         .scale({
 //           imperial: false,
 //           position: "bottomright",
 //         })
@@ -98,38 +391,35 @@ export default function App() {
 //           attribution: "",
 //         }
 //       ).addTo(_map);
+
 //       return () => {
 //         _map.remove();
 //       };
 //     }
 //   }, []);
 
-//   const renderCanvas = async(map:L.Map) =>{
-//     const canvas = document.createElement("canvas");
-//     const ctx = canvas.getContext("2d")!;
-//     ctx.fillStyle = "rgb(255,0,0)";
-//     ctx.fillRect(10, 10, 55, 50);
-//     const url = canvas.toDataURL("png");
-//     const tempData: FieldData = await fetch("/temp1.json").then((res) =>
-//       res.json()
-//     );
-
-//     const imageBounds =L.latLngBounds([
-//     [tempData.yllcorner, tempData.xllcorner], 
-//     [tempData.yllcorner + tempData.cellsize * tempData.nrows, 
-//      tempData.xllcorner + tempData.cellsize * tempData.ncols]]);
-
-//     const layer = L.imageOverlay(url,imageBounds).addTo(map);
-//     console.log(layer);
-//   };
 //   return (
 //     <div className="relative">
 //       <div ref={mapRef} className="z-10 h-svh"></div>
-//       {mapReady && <Location />}
+//       {mapReady && (
+//         <>
+//           <Location />
+//           <CanvasRender />
+//         </>
+//       )}
 //     </div>
 //   );
 // }
-// type FieldData = {
+
+//作业二
+// import React, { useEffect, useRef, useState } from "react";
+// import L from "leaflet";
+// import Location from "./components/Location";
+// import RenderCanvas from "./components/renderCanvas"; 
+// import store from "./store";
+// import "leaflet/dist/leaflet.css";
+
+// export type FieldData = {
 //   cellsize: number;
 //   data: number[][];
 //   nODATA: string;
@@ -137,8 +427,59 @@ export default function App() {
 //   yllcorner: number;
 //   ncols: number;
 //   nrows: number;
-// }
+// };
+// export default function App() {
+//   const mapRef = useRef<HTMLDivElement>(null);
+//   const [mapReady, setMapReady] = useState(false);
+//   const [tempData, setTempData] = useState<FieldData | null>(null);
 
+//   useEffect(() => {
+//     if (mapRef.current) {
+//       const _map = L.map(mapRef.current, {
+//         zoomControl: false,
+//         attributionControl: false,
+//       }).setView([36, 120], 7);
+//       store.setMap(_map); // 将 map 存入 store
+//       setMapReady(true);
+
+//       // 添加控件
+//       L.control.scale({ imperial: false, position: "bottomright" }).addTo(_map);
+//       L.control.zoom({ position: "bottomright" }).addTo(_map);
+
+//       // 添加底图
+//       L.tileLayer(
+//         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+//         {
+//           attribution: "",
+//         }
+//       ).addTo(_map);
+
+//       return () => {
+//         _map.remove();
+//       };
+//     }
+//   }, []);
+
+//   // 获取数据
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const response = await fetch("/temp1.json");
+//       const data = await response.json();
+//       setTempData(data);
+//     };
+//     if (mapReady) fetchData();
+//   }, [mapReady]);
+
+//   return (
+//     <div className="relative">
+//       <div ref={mapRef} className="z-10 h-svh"></div>
+//       {mapReady && <Location />}
+//       {mapReady && tempData && ( 
+//         <RenderCanvas tempData={tempData} />
+//       )}
+//     </div>
+//   );
+// }
 
 // //作业一
 // // export default function App() {
